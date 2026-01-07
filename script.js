@@ -1,5 +1,22 @@
-let data, allPosts = [];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
 
+const firebaseConfig = {
+    apiKey: "AIzaSyADEJbI42ZAiKSs_axKkeyLGHnducPyU7s",
+    authDomain: "blog-7cf87.firebaseapp.com",
+    projectId: "blog-7cf87",
+    storageBucket: "blog-7cf87.firebasestorage.app",
+    messagingSenderId: "851710728062",
+    appId: "1:851710728062:web:3102c6bd85f271aa35c52f",
+    measurementId: "G-WFDYD8SQHL"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const analytics = getAnalytics(app);
+
+let data, allPosts = [];
 let categories;
 
 async function readTextFile(path)
@@ -15,10 +32,54 @@ async function readTextFile(path)
     }
 }
 
+function resetView(showList = true)
+{
+    document.querySelector(".postContainer").style.display = showList ? "block" : "none";
+    document.querySelector(".article")?.remove();
+    document.querySelector(".others")?.remove();
+}
+
+function formatContent(content)
+{
+    return content.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+}
+
+async function syncViewWithServer(idx, postObj)
+{
+    const postRef = doc(db, "hits", String(idx));
+    try
+    {
+        const snap = await getDoc(postRef);
+        if (snap.exists())
+            postObj.view = snap.data().count;
+        else
+        {
+            await setDoc(postRef, { count: 0 });
+            postObj.view = 0;
+        }
+    }
+    catch (e)
+    {
+        console.error("Firebase Sync Error:", e);
+    }
+}
+
+async function increaseView(idx)
+{
+    const postRef = doc(db, "hits", String(idx));
+    try
+    {
+        await updateDoc(postRef, { count: increment(1) });
+    }
+    catch (e)
+    {
+        console.error("View Count Update Error:", e);
+    }
+}
+
 async function getPost()
 {
     let idx = 0;
-
     while (true)
     {
         const origin = await readTextFile(`${idx}.txt`);
@@ -30,17 +91,17 @@ async function getPost()
 
         if (categoryRegex && titleRegex && dateRegex)
         {
-            const category = categoryRegex[1].trim();
-            const title = titleRegex[1].trim();
-            const date = dateRegex[1].trim();
-            
-            const content = origin
-                .replace(/\{.*?\}/, "")
-                .replace(/\[.*?\]/, "")
-                .replace(/<.*?>/, "")
-                .trim();
+            const postObj = {
+                idx: idx,
+                category: categoryRegex[1].trim(),
+                title: titleRegex[1].trim(),
+                date: dateRegex[1].trim(),
+                content: origin.replace(/\{.*?\}/, "").replace(/\[.*?\]/, "").replace(/<.*?>/, "").trim(),
+                view: 0
+            };
 
-            allPosts.push({ idx, category, title, content, date, view: 0 });
+            await syncViewWithServer(idx, postObj);
+            allPosts.push(postObj);
         }
         idx++;
     }
@@ -54,7 +115,8 @@ function addCards(postsToShow, displayTitle = "모든 게시물")
     postContainer.innerHTML = "";
     totalLabel.textContent = `${displayTitle} (${postsToShow.length})`;
 
-    postsToShow.forEach(post => {
+    postsToShow.forEach(post => 
+    {
         const postDom = `
             <div class="post" data-idx="${post.idx}">
                 <div class="info">
@@ -75,6 +137,7 @@ function addArticle(idx)
     const post = allPosts.find(p => String(p.idx) === String(idx));
     if (!post) return;
 
+    const formattedBody = formatContent(post.content);
     const dom = `
         <div class="article">
             <div>
@@ -85,7 +148,7 @@ function addArticle(idx)
                 </div>
                 <h1>${post.title}</h1>
             </div>
-            <p style="white-space: pre-wrap;">${post.content}</p>
+            <p style="white-space: pre-wrap;">${formattedBody}</p>
         </div>
         <div class="others">
             <h1>같은 카테고리의 다른 글</h1>
@@ -93,24 +156,15 @@ function addArticle(idx)
         </div>
     `;
     document.querySelector("main").insertAdjacentHTML("beforeend", dom);
-
     addSmallArticle(post.category, "article", idx);
 }
 
 function addSmallArticle(categoryName, to, except)
 {
-    let source;
-
-    if (categoryName === "all")
-        source = [...allPosts];
-        
-    else
-        source = allPosts.filter(p => p.category === categoryName);
+    let source = (categoryName === "all") ? [...allPosts] : allPosts.filter(p => p.category === categoryName);
 
     if (except !== "none")
-    {
         source = source.filter(item => String(item.idx) !== String(except));
-    }
 
     source.sort((a, b) => b.view - a.view);
 
@@ -122,9 +176,7 @@ function addSmallArticle(categoryName, to, except)
     const limit = Math.min(source.length, 4);
 
     for (let i = 0; i < limit; i++)
-    {
         container.insertAdjacentHTML("beforeend", `<li class="link">${source[i].title}</li>`);
-    }
 
     if (container.innerHTML == "")
         container.insertAdjacentHTML("beforeend", `게시물이 없습니다.`);
@@ -138,98 +190,83 @@ async function init()
     {
         const response = await fetch("./data.json");
         data = await response.json();
+        categories = data.flatMap(item => item[1].flatMap(subItem => subItem.category));
     }
     catch (e)
     {
         console.error("Data load failed", e);
     }
 
-    categories = data.flatMap(item => 
-        item[1].flatMap(subItem => subItem.category)
-    );
-
     addCards(allPosts);
+    addSmallArticle("all", "popular", "none");
 
-    document.querySelectorAll(".root").forEach(rootUl => {
+    document.querySelectorAll(".root").forEach(rootUl => 
+    {
         if (!data) return;
-        data.forEach(([mainTitle, subTitles]) => {
-            rootUl.insertAdjacentHTML("beforeend", `
-                <ul class="parent">
-                    <span class="menuTitle">${mainTitle}</span>
-                </ul>
-            `);
+        data.forEach(([mainTitle, subTitles]) => 
+        {
+            rootUl.insertAdjacentHTML("beforeend", `<ul class="parent"><span class="menuTitle">${mainTitle}</span></ul>`);
             const parentElement = rootUl.lastElementChild;
-
-            subTitles.forEach(sub => {
-                parentElement.insertAdjacentHTML("beforeend", `
-                    <ul class="child">
-                        <span class="sub-title">${sub.name}</span>
-                    </ul>
-                `);
+            subTitles.forEach(sub => 
+            {
+                parentElement.insertAdjacentHTML("beforeend", `<ul class="child"><span class="sub-title">${sub.name}</span></ul>`);
                 const childElement = parentElement.lastElementChild;
-                sub.category.forEach(catItem => {
-                    childElement.insertAdjacentHTML("beforeend", `<li>${catItem}</li>`);
-                });
+                sub.category.forEach(catItem => 
+                    childElement.insertAdjacentHTML("beforeend", `<li>${catItem}</li>`)
+                );
             });
         });
     });
 
-    document.addEventListener("click", (e) => {
-        if (e.target.classList.contains("showAllPosts"))
+    document.addEventListener("click", async (e) => 
+    {
+        const target = e.target;
+
+        if (target.classList.contains("showAllPosts"))
         {
-            document.querySelector(".postContainer").style.display = "block";
-            document.querySelector(".article")?.remove();
-            document.querySelector(".others")?.remove();
+            resetView(true);
             addCards(allPosts);
         }
 
-        if (e.target.tagName === "LI")
+        if (target.tagName === "LI")
         {
-            if(e.target.classList.contains("link"))
+            if (target.classList.contains("link"))
             {
-                document.querySelector(".postContainer").style.display = "none";
-                document.querySelector(".article")?.remove();
-                document.querySelector(".others")?.remove();
-                
-                addArticle(allPosts.find(p => p.title === e.target.textContent).idx);
-                
+                const post = allPosts.find(p => p.title === target.textContent);
+                if (post)
+                {
+                    await increaseView(post.idx);
+                    post.view++;
+                    resetView(false);
+                    addArticle(post.idx);
+                }
             }
             else
             {
-                const targetCategory = e.target.textContent.trim();
-                const filtered = allPosts.filter(p => p.category === targetCategory);
-
-                document.querySelector(".postContainer").style.display = "block";
-                document.querySelector(".article")?.remove();
-                document.querySelector(".others")?.remove();
-
-                console.log(filtered, targetCategory);
-                addCards(filtered, targetCategory);
+                const cat = target.textContent.trim();
+                resetView(true);
+                addCards(allPosts.filter(p => p.category === cat), cat);
             }
         }
 
-        if (e.target.classList.contains("menuTitle") || e.target.classList.contains("sub-title"))
+        if (target.classList.contains("menuTitle") || target.classList.contains("sub-title"))
         {
-            const isMain = e.target.classList.contains("menuTitle");
-            const children = e.target.parentElement.querySelectorAll(isMain ? ":scope > .child" : ":scope > li");
+            const isMain = target.classList.contains("menuTitle");
+            const children = target.parentElement.querySelectorAll(isMain ? ":scope > .child" : ":scope > li");
             children.forEach(item => item.classList.toggle("show"));
         }
         
-        const postCard = e.target.closest(".post");
+        const postCard = target.closest(".post");
         if (postCard)
         {
             const idx = postCard.dataset.idx;
             const post = allPosts.find(p => String(p.idx) === String(idx));
-            
-            document.querySelector(".postContainer").style.display = "none";
-            document.querySelector(".article")?.remove();
-            document.querySelector(".others")?.remove();
-
+            await increaseView(idx);
+            post.view++;
+            resetView(false);
             addArticle(idx);
         }
     });
-
-    addSmallArticle("all", "popular", "none");
 }
 
 init();
