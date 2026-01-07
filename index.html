@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JH의 개발일지</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="font.css">
+</head>
+<body>
+    <header>
+        <h1>JH의 개발일지</h1>
+        <input type="text" placeholder="검색어를 입력해주세요.">
+    </header>
+    <nav>
+        <button class="showAllPosts">모든 게시물</button>
+        <ul class="root"></ul>
+    </nav>
+    <div class="container">
+        <aside>
+            <div class="greeting">
+                <h2><small>웹 개발자</small>이준혁</h2>
+                <a href="https://junehyuk0920.github.io/main" target="_blank">개인 웹사이트</a>
+            </div>
+            <div class="categories">
+                <h1>카테고리</h1>
+                <button class="showAllPosts">모든 게시물</button>
+                <ul class="root"></ul>
+            </div>
+            <div class="popular">
+                <h1>인기있는 게시물</h1>
+                <ul></ul>
+            </div>
+        </aside>
+        <main>
+            <div class="postContainer">
+                <h1 class="total">모든 게시물 (0)</h1>
+                <div class="posts"></div>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <h1>ⓒ 2025. 이준혁 All rights reserved.</h1>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

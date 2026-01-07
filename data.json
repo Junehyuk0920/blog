@@ -1,0 +1,24 @@
+[
+    [
+        "Web",
+        [
+            { "name" : "Frontend", "category" : ["HTML / CSS", "JavaScript", "React", "Vue.js"] },
+            { "name" : "Backend", "category" : ["Flask", "PHP"]},
+            { "name" : "DataBase", "category" : ["MySQL"]}
+        ]
+    ],
+    [
+        "Language",
+        [
+            { "name" : "C++", "category" : ["(C++) Basics", "(C++) Data Structure", "(C++) Algorithm"] },
+            { "name" : "Python", "category" : ["(Python) Basics", "(Python) Data Structure", "(Python) Algorithm"] }
+        ]
+    ],
+    [
+        "Embedded",
+        [
+            { "name" : "Arduino", "category" : ["(Arduino) Circuit", "(Arduino) Communication", "(Arduino) Sensors", "(Arduino) Actuators"] },
+            { "name" : "Lego Spike", "category" : ["(Lego Spike) Sensors", "(Lego Spike) Actuators"] }
+        ]
+    ]
+]
