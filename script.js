@@ -63,7 +63,7 @@ function addCards(postsToShow, displayTitle = "모든 게시물")
                     <span>조회 : ${post.view}회</span>
                 </div>
                 <h1>${post.title}</h1>
-                <p>${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}</p>
+                <p>${post.content.substring(0, 180)}${post.content.length > 180 ? '...' : ''}</p>
             </div>
         `;
         postContainer.insertAdjacentHTML("beforeend", postDom);
