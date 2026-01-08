@@ -19,6 +19,12 @@ const analytics = getAnalytics(app);
 let data, allPosts = [];
 let categories;
 
+function stripHtml(html)
+{
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+}
+
 async function readTextFile(path)
 {
     try
@@ -39,19 +45,13 @@ function resetView(showList = true)
     document.querySelector(".others")?.remove();
 }
 
-function formatContent(content)
-{
-    return content.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-}
-
 async function syncViewWithServer(idx, postObj)
 {
     const postRef = doc(db, "hits", String(idx));
     try
     {
         const snap = await getDoc(postRef);
-        if (snap.exists())
-            postObj.view = snap.data().count;
+        if (snap.exists()) postObj.view = snap.data().count;
         else
         {
             await setDoc(postRef, { count: 0 });
@@ -117,6 +117,7 @@ function addCards(postsToShow, displayTitle = "모든 게시물")
 
     postsToShow.forEach(post => 
     {
+        const plainText = stripHtml(post.content);
         const postDom = `
             <div class="post" data-idx="${post.idx}">
                 <div class="info">
@@ -125,7 +126,7 @@ function addCards(postsToShow, displayTitle = "모든 게시물")
                     <span>조회 : ${post.view}회</span>
                 </div>
                 <h1>${post.title}</h1>
-                <p>${post.content.substring(0, 180)}${post.content.length > 180 ? '...' : ''}</p>
+                <p>${plainText.substring(0, 180)}${plainText.length > 180 ? '...' : ''}</p>
             </div>
         `;
         postContainer.insertAdjacentHTML("beforeend", postDom);
@@ -137,7 +138,16 @@ function addArticle(idx)
     const post = allPosts.find(p => String(p.idx) === String(idx));
     if (!post) return;
 
-    const formattedBody = formatContent(post.content);
+    const parser = new DOMParser();
+    const tempDoc = parser.parseFromString(post.content, 'text/html');
+
+    tempDoc.querySelectorAll('code').forEach(codeBlock => 
+    {
+        codeBlock.textContent = codeBlock.textContent.trim();
+    });
+
+    const processedContent = tempDoc.body.innerHTML;
+
     const dom = `
         <div class="article">
             <div>
@@ -148,7 +158,7 @@ function addArticle(idx)
                 </div>
                 <h1>${post.title}</h1>
             </div>
-            <p style="white-space: pre-wrap;">${formattedBody}</p>
+            <div class="articleContent">${processedContent}</div>
         </div>
         <div class="others">
             <h1>같은 카테고리의 다른 글</h1>
@@ -163,8 +173,7 @@ function addSmallArticle(categoryName, to, except)
 {
     let source = (categoryName === "all") ? [...allPosts] : allPosts.filter(p => p.category === categoryName);
 
-    if (except !== "none")
-        source = source.filter(item => String(item.idx) !== String(except));
+    if (except !== "none") source = source.filter(item => String(item.idx) !== String(except));
 
     source.sort((a, b) => b.view - a.view);
 
@@ -175,11 +184,9 @@ function addSmallArticle(categoryName, to, except)
     container.innerHTML = "";
     const limit = Math.min(source.length, 4);
 
-    for (let i = 0; i < limit; i++)
-        container.insertAdjacentHTML("beforeend", `<li class="link">${source[i].title}</li>`);
+    for (let i = 0; i < limit; i++) container.insertAdjacentHTML("beforeend", `<li class="link">${source[i].title}</li>`);
 
-    if (container.innerHTML == "")
-        container.insertAdjacentHTML("beforeend", `게시물이 없습니다.`);
+    if (container.innerHTML == "") container.insertAdjacentHTML("beforeend", `게시물이 없습니다.`);
 }
 
 async function init()
@@ -211,9 +218,7 @@ async function init()
             {
                 parentElement.insertAdjacentHTML("beforeend", `<ul class="child"><span class="sub-title">${sub.name}</span></ul>`);
                 const childElement = parentElement.lastElementChild;
-                sub.category.forEach(catItem => 
-                    childElement.insertAdjacentHTML("beforeend", `<li>${catItem}</li>`)
-                );
+                sub.category.forEach(catItem => childElement.insertAdjacentHTML("beforeend", `<li>${catItem}</li>`));
             });
         });
     });

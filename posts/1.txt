@@ -1,3 +1,90 @@
-{HTML / CSS} [테스트] <2026.01.07>
+{(Python) Algorithm} [파이썬 기초 정렬] <2026.01.09>
 
-테스트용 더미 파일
+<h2>버블 정렬</h2>
+<code>
+item = list(map(int, input().split()))
+
+for i in range(len(item)):
+    for j in range(len(item) - 1 - i):
+        if item[j] > item[j+1]:
+            item[j], item[j+1] = item[j+1], item[j]
+        
+print(item)
+</code>
+
+<h2>칵테일(셰이커) 정렬<small> => 버블정렬의 거북이 문제 해결</small></h2>
+<code>
+item = list(map(int, input().split()))
+
+swapped = True
+direction = True
+
+st = 0
+ed = len(item) - 1
+
+while swapped:
+    swapped = False
+    
+    if direction:
+        for i in range(st, ed):
+            if item[i] > item[i+1]:
+                item[i], item[i+1] = item[i+1], item[i]
+                swapped = True
+        
+        ed -= 1
+    else:
+        for i in range(ed-1, st-1, -1):
+            if item[i] > item[i+1]:
+                item[i], item[i+1] = item[i+1], item[i]
+                swapped = True
+        st += 1
+    
+    direction = not direction
+        
+print(item)
+</code>
+
+<h2>선택 정렬</h2>
+<code>
+item = list(map(int, input().split()))
+
+for i in range(len(item)):
+    minIdx = i
+    for j in range(i, len(item)):
+        if item[minIdx] > item[j]:
+            minIdx = j
+            
+    item[i], item[minIdx] = item[minIdx], item[i]
+        
+print(item)
+</code>
+
+<h2>이중 선택 정렬</h2>
+<code>
+item = list(map(int, input().split()))
+
+st = 0
+ed = len(item) - 1
+
+while st < ed:
+    minIdx = st
+    maxIdx = st
+    for i in range(st, ed + 1):
+        if item[minIdx] > item[i]:
+            minIdx = i
+            
+        if item[maxIdx] < item[i]:
+            maxIdx = i
+            
+    item[st], item[minIdx] = item[minIdx], item[st]
+    
+    if maxIdx == st: #만약 최댓값이 원래 st 자리에 있었을 때 예외처리
+        maxIdx = minIdx
+    
+    item[ed], item[maxIdx] = item[maxIdx], item[ed]
+    
+    st += 1
+    ed -= 1
+        
+print(item)
+</code>

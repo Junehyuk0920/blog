@@ -258,7 +258,7 @@ main > h1
     cursor: pointer;
 }
 
-.post h1
+.post > h1
 {
     font-size: 25px;
     font-weight: 500;
@@ -314,12 +314,12 @@ main > h1
     padding: 20px 25px;
 }
 
-.article h1
+.article h1:not(.articleContent h1)
 {
     margin-top: 15px;
 }
 
-.article p
+.articleContent
 {
     white-space: pre-wrap;
     padding: 30px 40px;
@@ -327,6 +327,17 @@ main > h1
     border: 1px solid;
     font-size: 17px;
     line-height: 1.5;
+}
+
+code
+{
+    display: block;
+    background-color: #111;
+    color: #fff;
+    font-family: 'Courier New';
+    line-height: 1.5;
+    padding: 10px 15px;
+    border-radius: 5px;
 }
 
 .others
