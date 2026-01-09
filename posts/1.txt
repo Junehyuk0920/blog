@@ -1,4 +1,4 @@
-{(Python) Algorithm} [파이썬 기초 정렬] <2026.01.09>
+{(Python) Algorithm} [파이썬 정렬 - O(n^2)] <2026.01.09>
 
 <h2>버블 정렬</h2>
 <code>
@@ -85,6 +85,18 @@ while st < ed:
     
     st += 1
     ed -= 1
+        
+print(item)
+</code>
+
+<h2>삽입 정렬</h2>
+<code>
+item = list(map(int, input().split()))
+
+for i in range(len(item) - 1):
+    for j in range(i, -1, -1):
+        if item[j] > item[j+1]:
+            item[j], item[j+1] = item[j+1], item[j]
         
 print(item)
 </code>

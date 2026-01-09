@@ -1,3 +1,5 @@
+//////////////// firebase start ////////////////////
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
@@ -15,35 +17,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const analytics = getAnalytics(app);
-
-let data, allPosts = [];
-let categories;
-
-function stripHtml(html)
-{
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-}
-
-async function readTextFile(path)
-{
-    try
-    {
-        const response = await fetch(`./posts/${path}`);
-        return response.ok ? await response.text() : null;
-    }
-    catch
-    {
-        return null;
-    }
-}
-
-function resetView(showList = true)
-{
-    document.querySelector(".postContainer").style.display = showList ? "block" : "none";
-    document.querySelector(".article")?.remove();
-    document.querySelector(".others")?.remove();
-}
 
 async function syncViewWithServer(idx, postObj)
 {
@@ -75,6 +48,37 @@ async function increaseView(idx)
     {
         console.error("View Count Update Error:", e);
     }
+}
+
+//////////////// firebase end ////////////////////
+
+let data, allPosts = [];
+let categories;
+
+function stripHtml(html)
+{
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+}
+
+async function readTextFile(path)
+{
+    try
+    {
+        const response = await fetch(`./posts/${path}`);
+        return response.ok ? await response.text() : null;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+function resetView(showList = true)
+{
+    document.querySelector(".postContainer").style.display = showList ? "block" : "none";
+    document.querySelector(".article")?.remove();
+    document.querySelector(".others")?.remove();
 }
 
 async function getPost()
@@ -204,7 +208,7 @@ async function init()
         console.error("Data load failed", e);
     }
 
-    addCards(allPosts);
+    addCards([...allPosts].sort((a, b) => b.view - a.view));
     addSmallArticle("all", "popular", "none");
 
     document.querySelectorAll(".root").forEach(rootUl => 
@@ -230,7 +234,7 @@ async function init()
         if (target.classList.contains("showAllPosts"))
         {
             resetView(true);
-            addCards(allPosts);
+            addCards([...allPosts].sort((a, b) => b.view - a.view));
         }
 
         if (target.tagName === "LI")
@@ -250,7 +254,7 @@ async function init()
             {
                 const cat = target.textContent.trim();
                 resetView(true);
-                addCards(allPosts.filter(p => p.category === cat), cat);
+                addCards([...allPosts].sort((a, b) => b.view - a.view).filter(p => p.category === cat), cat);
             }
         }
 
@@ -272,6 +276,25 @@ async function init()
             addArticle(idx);
         }
     });
+
+    document.querySelector("#sort").addEventListener("change", e => {
+        console.log(allPosts);
+        if(e.target.value == "view")
+        {
+            resetView(true);
+            addCards([...allPosts].sort((a, b) => b.view - a.view));
+        }
+        else if(e.target.value == "new")
+        {
+            resetView(true);
+            addCards([...allPosts].sort((a, b) => new Date(b.date) - new Date(a.date)));
+        }
+        else if(e.target.value == "old")
+        {
+            resetView(true);
+            addCards([...allPosts].sort((a, b) => new Date(a.date) - new Date(b.date)));
+        }
+    })
 }
 
 init();

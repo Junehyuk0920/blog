@@ -241,7 +241,18 @@ main
     width: calc(100% - 220px - 50px);
 }
 
-main > h1
+main > div:first-child > div:first-child
+{
+    display: flex;
+    justify-content: space-between;
+}
+
+main > div:first-child > div:first-child select
+{
+    margin-left: 10px;
+}
+
+main > div:first-child > div:first-child > h1
 {
     font-weight: 600;
     border-bottom: 2px solid;

@@ -34,7 +34,14 @@
         </aside>
         <main>
             <div class="postContainer">
-                <h1 class="total">모든 게시물 (0)</h1>
+                <div>
+                    <h1 class="total">모든 게시물 (0)</h1>
+                    <select name="" id="sort">
+                        <option value="view">조회수 순 (기본값)</option>
+                        <option value="new">최신 순</option>
+                        <option value="old">오래된 순</option>
+                    </select>
+                </div>
                 <div class="posts"></div>
             </div>
         </main>
