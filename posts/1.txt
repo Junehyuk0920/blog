@@ -1,4 +1,4 @@
-{(Python) Algorithm} [파이썬 정렬 - O(n^2)] <2026.01.09>
+{(Python) Algorithm} [파이썬 정렬 - O(n^2)] <2026.01.08>
 
 <h2>버블 정렬</h2>
 <code>

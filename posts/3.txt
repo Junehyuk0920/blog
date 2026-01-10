@@ -1,0 +1,30 @@
+{(Python) Data Structure} [C++ 벡터와 파이썬 리스트 메서드 대응표] <2026.01.09>
+
+왼쪽은 파이썬, 오른쪽은 C++ 예제 코드입니다.
+
+<h3>맨 뒤 값 추가</h3>
+v.push_end(value) -> <b>lst.append(value)</b>
+
+<h3>값 삽입</h3>
+v.insert(v.begin() + i, value) -> <b>lst.insert(i, value)</b>
+
+<h3>맨 뒤 값 삭제</h3>
+v.pop_back() -> <b>lst.pop()</b>
+
+<h3>값으로 삭제</h3>
+v.erase(remove(v.begin(), v.end(), value), v.end()) -> <b>lst.remove(value)</b>
+
+<h3>인덱스로 삭제</h3>
+v.erase(v.begin() + i) -> <b>lst.pop(i) 혹은 del lst[i]</b>
+
+<h3>개수 세기</h3>
+v.size() -> <b>len(lst)</b>
+
+<h3>모두 삭제</h3>
+<b>.clear()로 같음</b>
+
+<h3>정렬</h3>
+v.sort(v.begin(), v.end()) -> <b>lst.sort()</b>
+
+<h3>뒤집기</h3>
+v.reverse(v.begin(), v.end()) -> <b>lst.reverse()</b>

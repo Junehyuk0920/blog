@@ -10,6 +10,7 @@
     [
         "Language",
         [
+            { "name" : "C", "category" : ["(C) Basics"]},
             { "name" : "C++", "category" : ["(C++) Basics", "(C++) Data Structure", "(C++) Algorithm"] },
             { "name" : "Python", "category" : ["(Python) Basics", "(Python) Data Structure", "(Python) Algorithm"] }
         ]

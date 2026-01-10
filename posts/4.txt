@@ -1,0 +1,25 @@
+{(C) Basics} [C언어 .과 -> 차이] <2026.01.10>
+
+<h2><b>.</b>은 객체 자체의 멤버에 접근 할 때 사용</h2>
+<code>
+vector<int> v;
+
+v.push_back(10);
+</code>
+
+<h2><b>-></b>는 객체를 가리키는 포인터를 통해 멤버에 접근 할 때 사용</h2>
+<code>
+vector<int> v = {1, 2, 3};
+vector<int*> p = &v;
+
+p->push_back(10);
+</code>
+
+<h2>사실 p->는 (*p).의 줄임말임</h2>
+<code>
+v.push_back(10);
+p->push_back(10);
+(*p).push_back(10);
+</code>
+
+위 코드 모두 같음
