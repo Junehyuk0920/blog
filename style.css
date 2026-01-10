@@ -25,6 +25,11 @@ header
     padding: 30px;
 }
 
+header h1
+{
+    cursor: pointer;
+}
+
 header input
 {
     padding: 5px;
